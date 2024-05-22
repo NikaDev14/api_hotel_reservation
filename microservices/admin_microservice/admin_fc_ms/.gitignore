@@ -1,0 +1,22 @@
+# .NET Core
+bin/
+obj/
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+# Visual Studio files
+.vs/
+*.suo
+*.cache
+*.user
+*.ncrunch*
+*.dotCover
+*.resharper
+_ReSharper*/
+*.sln.docstates
+*.sln.ide-shutdown
+# Other files
+*.log
+*.swp
+.DS_Store
+Thumbs.db

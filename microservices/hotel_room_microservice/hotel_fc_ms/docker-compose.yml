@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+
+  hotel_web:
+    container_name: 'aspnet-hotel-app'
+    image: 'aspnet-hotel-app'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "5001:80"
+     - "7002:443"
+    networks:
+      - aspnet-hotel-network
+      - admin-ms-network
+    restart: always
+    depends_on:
+      - room_hotel_pg
+    environment:
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Host=room_hotel_pg;Server=room_hotel_pg;Port=5432;Database=room_hotel_db_driver; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=https://+;http://+
+      - ASPNETCORE_HTTPS_PORT=7002
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=toto123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      -  .aspnet/https:/https/
+  room_hotel_pg:
+    image: postgres:latest
+    container_name: room_hotel_pg
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=room_hotel_db_driver
+    ports:
+      - "5433:5432"
+    restart: always
+    volumes:
+      - hotel_app_data:/var/lib/postgresql/data
+    networks:
+      - aspnet-hotel-network
+networks:
+  admin-ms-network:
+    name: admin-ms-network
+    external: true
+  aspnet-hotel-network:
+    name: aspnet-hotel-network
+volumes:
+  hotel_app_data:

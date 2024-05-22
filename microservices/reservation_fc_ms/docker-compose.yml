@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+
+  reservations_web:
+    container_name: 'aspnet-reservations-app'
+    image: 'aspnet-reservations-app'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "5003:80"
+     - "7004:443"
+    networks:
+      - aspnet-reservation-network
+      - aspnet-hotel-network
+      - aspnetcoreapp-user-network
+      - aspnet-options-network
+    restart: always
+    depends_on:
+      - reservations_pg
+    environment:
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Host=reservations_pg;Server=reservations_pg;Port=5432;Database=ReservationsDbDriver; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=https://+;http://+
+      - ASPNETCORE_HTTPS_PORT=7004
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=toto123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+      - .aspnet/https:/https/
+  reservations_pg:
+    image: postgres:latest
+    container_name: reservations_pg
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ReservationsDbDriver
+    ports:
+      - "5435:5432"
+    restart: always
+    volumes:
+      - reservation_app_data:/var/lib/postgresql/data
+    networks:
+      - aspnet-reservation-network
+networks:
+  aspnet-hotel-network:
+    name: aspnet-hotel-network
+    external: true
+  aspnetcoreapp-user-network:
+    name: aspnetcoreapp-user-network
+    external: true
+  aspnet-options-network:
+    name: aspnet-options-network
+    external: true
+  aspnet-reservation-network:
+    name: aspnet-reservation-network
+volumes:
+  reservation_app_data:

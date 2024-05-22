@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+
+  user_ms_web:
+    container_name: 'user_ms_web'
+    image: 'user_ms_web'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "5000:80"
+     - "7001:443"
+    networks:
+      - aspnetcoreapp-user-network
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Host=postgres;Server=postgres;Port=5432;Database=SampleDbDriver; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=https://+;http://+
+      - ASPNETCORE_HTTPS_PORT=7001
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=toto123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - .aspnet/https:/https/
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=SampleDbDriver
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - app_data:/var/lib/postgresql/data
+    networks:
+      - aspnetcoreapp-user-network
+networks:
+  aspnetcoreapp-user-network:
+    name: aspnetcoreapp-user-network
+volumes:
+  app_data:

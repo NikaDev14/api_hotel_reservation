@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+
+  web:
+    container_name: 'admin-ms'
+    image: 'admin-ms'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "5004:80"
+     - "7005:443"
+    networks:
+      - admin-ms-network
+    restart: always
+    depends_on:
+      - admin_pg
+    environment:
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Host=admin_pg;Server=admin_pg;Port=5432;Database=AdminDbDriver; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=https://+;http://+
+      - ASPNETCORE_HTTPS_PORT=7005
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=toto123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      -  .aspnet/https:/https/
+  admin_pg:
+    image: postgres:latest
+    container_name: admin_pg
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=AdminDbDriver
+    ports:
+      - "5436:5432"
+    restart: always
+    volumes:
+      - admin_ms_data:/var/lib/postgresql/data
+    networks:
+      - admin-ms-network
+networks:
+  admin-ms-network:
+    name: admin-ms-network
+volumes:
+  admin_ms_data:
